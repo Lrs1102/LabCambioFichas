@@ -1,0 +1,115 @@
+-- Database: juego
+
+-- DROP DATABASE juego;
+
+CREATE DATABASE juego
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'Spanish_Costa Rica.1252'
+    LC_CTYPE = 'Spanish_Costa Rica.1252'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+
+-- Table: public.control
+
+-- DROP TABLE public.control;
+
+CREATE TABLE public.control
+(
+    usuario character varying COLLATE pg_catalog."default",
+    fecha date,
+    adyacentes integer,
+    saltos integer,
+    tipo character varying COLLATE pg_catalog."default"
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.control
+    OWNER to postgres;
+
+
+
+
+
+-- Table: public.usuarios
+
+-- DROP TABLE public.usuarios;
+
+CREATE TABLE public.usuarios
+(
+    usuario character varying COLLATE pg_catalog."default" NOT NULL,
+    nombre character varying COLLATE pg_catalog."default",
+    fecha date,
+    CONSTRAINT usuarios_pkey PRIMARY KEY (usuario)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE public.usuarios
+    OWNER to postgres;
+
+
+
+
+GO
+USE juego
+go
+--Seleccion de datos
+
+create proc DashboardDatos
+@topganados int output,
+@topadyacentes int output,
+@contreinicio int output,
+@contganado int output
+as
+Set topganados = (select count (tipo)  as Ganados where tipo = 'Ganado' from control)
+Set @topadyacentes  = (select count(adyacentes)  as MovimientoAdyacente from control)
+Set @contreinicio   =(select count(tipo) as Reiniciados where tipo = 'Reiniciado' from control)
+Set contganado = (select count(tipo)  as Ganados where tipo = 'Ganado' from control)
+
+go
+
+
+
+--Procedimientos
+
+--Procedimiento para el que tiene mas veces ganado
+create proc TopGanados
+as
+Select Top 3 c.usuario+' '+c.tipo +' ' as TopGanador , COUNT(c.tipo) AS topGanador
+from control
+Group by topGanador,c.usuario  
+Order by count(3) desc
+go
+
+
+
+--Procedimiento para los que tienen menos movimientos adyacentes
+
+
+create proc MenosAdyas
+as
+Select Top 3 c.usuario+' '+c.adyacentes+' ' as TopAdyac , COUNT(c.adyacentes) AS topAdyacentes
+from control
+Group by TopAdyac, c.usuario  
+Order by count(3) asc
+go
+
+
+
+--Procedimiento para comparar contador de reiniciados
+create proc Resets
+as
+Select  count (tipo ) AS Reiniciados WHERE (tipo = 'Reiniciado' )
+from control
+go
+
+--Procedimiento para comparar contador de reiniciados
+create proc Goals
+as
+Select  count (tipo ) AS Ganados WHERE (tipo = 'Ganado' )
+from control
+go
